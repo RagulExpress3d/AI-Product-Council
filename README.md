@@ -1,4 +1,4 @@
-## Run Locally
+<img width="1872" height="902" alt="image" src="https://github.com/user-attachments/assets/aefaf5bb-84a1-42df-a748-cb9df345fa81" />## Run Locally
 
 **Prerequisites:**  Node.js
 
