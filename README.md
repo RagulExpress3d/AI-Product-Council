@@ -1,6 +1,6 @@
 <img width="1872" height="902" alt="image" src="https://github.com/user-attachments/assets/aefaf5bb-84a1-42df-a748-cb9df345fa81" />## Run Locally
 
-**Test Link**: https://amazon-pm-council-872747958244.us-west1.run.app/
+**Test Link**: https://ai-product-council-872747958244.us-west1.run.app/
 
 **Prerequisites:**  Node.js
 
