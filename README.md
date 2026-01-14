@@ -9,6 +9,8 @@
 3. Run the app:
    `npm run dev`
 
+**Documentation about the App:**
+
 1. App Overview
 The AI Product Manager Council is a productivity tool designed specifically for Amazon PMs, it helps transform raw ideas into polished PRFAQs and Product Requirements by simulating a Amazon leadership review.
 
