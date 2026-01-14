@@ -5,22 +5,22 @@ import { AgentPerspective, UserSettings, SpecialRoles, RejectedPath } from "../t
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const getBasePrompt = (role: string, settings: UserSettings) => {
-  const seniorityContext = `You are an Amazonian at the ${settings.seniority} level. Feedback should be commensurate with this seniority.`;
+  const coreContext = `You are a high-level Amazon Product Professional. Your feedback must be rigorous, data-driven, and focused on maintaining the highest bars for product quality.`;
   
-  const toneContext = settings.tone === 'Mentorship' 
-    ? 'Maintain a supportive, coaching tone.' 
-    : settings.tone === 'Cruel Critique' 
-      ? 'Be brutally honest, highlight every flaw, act as an extreme Bar Raiser looking for reasons to reject.' 
-      : 'Be professional and highly critical, focusing on maintaining Amazon\'s high standards.';
+  // Default values since we removed these from UI
+  const toneContext = 'Be professional and highly critical, focusing on maintaining Amazon\'s high standards.';
+
+  const negativeConstraints = `CRITICAL: NEVER mention seniority levels (e.g., L5, L6, L7, L8) or phrases like 'L5 Thinking' or 'L7 level analysis' in your output. Do not associate the quality of the PM's work with a specific seniority level. Focus purely on the product logic, customer impact, and leadership principles.`;
 
   if (role === SpecialRoles.MASTER_PM) {
-    return `You are the "Master PM" (Seniority: ${settings.seniority}). Role: Synthesis and conclusive path finding. Org Context: ${settings.orgContext}. ${seniorityContext} You weigh the council's feedback and ensure the product path strictly adheres to the council mandate: ${settings.lpFocus.join(', ')}. ${toneContext}`;
+    return `You are the "Master PM". Role: Synthesis and conclusive path finding. ${coreContext} You weigh the council's feedback and ensure the product path strictly adheres to the council mandate: ${settings.lpFocus.join(', ')}. ${toneContext} ${negativeConstraints}`;
   }
 
   return `You are the AI Auditor for: "${role}". 
   Your SUPERPOWER is to evaluate proposals strictly through the lens of ${role}. 
-  ${seniorityContext} 
+  ${coreContext} 
   ${toneContext} 
+  ${negativeConstraints}
   MANDATE: You must provide a numerical score (1-5) on how well the proposal embodies "${role}". 
   Score 1: No evidence of principle. 
   Score 3: Principle is visible but flawed. 
@@ -71,9 +71,14 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
     model: 'gemini-3-pro-preview',
     contents: `Topic: ${topic}\n\nDebate Summary:\n${councilDiscussion}\n\nTasks:
 1. Generate standard Amazon PRFAQ.
-2. Generate Council Report focused on alignment and trade-offs.
-3. Classify as Type 1 (One-Way) or Type 2 (Two-Way) decision.
-4. Extract exactly 2-3 "Rejected Paths" that were explicitly discussed or implied as alternatives.`,
+2. Generate Council Report. Use SIMPLE ENGLISH. 
+   Avoid jargons like "Type 1" or "Type 2". 
+   Structure: 
+   - Current State: Summarize where the product idea stands.
+   - Logic for Rejection/Decision/Approval: Explain the Council's consensus or disagreements.
+   - Suggested Next Steps: Clear, actionable path forward.
+3. Classify the decision category in plain English: Is it "High Impact & Difficult to Reverse" or "Low Impact & Easy to Change"?
+4. Extract exactly 2-3 "Rejected Paths" with reasons.`,
     config: {
       systemInstruction: getBasePrompt(SpecialRoles.MASTER_PM, settings),
       responseMimeType: "application/json",
@@ -82,7 +87,7 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
         properties: {
           prfaq: { type: Type.STRING },
           report: { type: Type.STRING },
-          decisionType: { type: Type.STRING, enum: ["Type 1 (One-Way)", "Type 2 (Two-Way)"] },
+          decisionType: { type: Type.STRING, description: "Plain English decision category like 'High Impact & Irreversible' or 'Low Impact & Reversible'" },
           rejectedPaths: {
             type: Type.ARRAY,
             items: {
@@ -103,6 +108,6 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
   try {
     return JSON.parse(response.text || '{}');
   } catch (e) {
-    return { prfaq: "Error", report: "Error", decisionType: "Type 2 (Two-Way)", rejectedPaths: [] };
+    return { prfaq: "Error", report: "Error", decisionType: "Low Impact & Reversible", rejectedPaths: [] };
   }
 }

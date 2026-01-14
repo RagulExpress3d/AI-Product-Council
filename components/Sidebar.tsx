@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, onSelectSe
           className="w-full flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors p-2 rounded hover:bg-white/5"
         >
           <Settings size={16} />
-          <span>Internal PM Settings</span>
+          <span>LP Settings</span>
         </button>
       </div>
     </div>

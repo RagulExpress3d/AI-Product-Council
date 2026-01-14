@@ -5,12 +5,10 @@ export const SpecialRoles = {
   MASTER_PM: 'Master PM'
 } as const;
 
-export type SeniorityLevel = 'L6 (PM-T)' | 'L7 (Principal)' | 'L8 (Director)' | 'S-Team (SVP/CEO)';
 export type CouncilTone = 'Mentorship' | 'Doc Bar-Raiser' | 'Cruel Critique';
 export type DecisionType = 'Type 1 (One-Way)' | 'Type 2 (Two-Way)';
 
 export interface UserSettings {
-  seniority: SeniorityLevel;
   lpFocus: string[];
   tone: CouncilTone;
   orgContext: string;

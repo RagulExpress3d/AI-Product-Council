@@ -34,11 +34,18 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejected
     }
   };
 
+  const handleDownload = () => {
+    // Using window.print() is the most reliable way to generate a PDF in-browser 
+    // without heavy external libraries. The index.html has @media print styles
+    // to ensure a clean document-only output.
+    window.print();
+  };
+
   const content = activeTab === 'prfaq' ? prfaq : report;
 
   return (
-    <div className="bg-white rounded-xl border shadow-sm flex flex-col h-[740px]">
-      <div className="flex items-center justify-between border-b px-6 py-4">
+    <div className="bg-white rounded-xl border shadow-sm flex flex-col h-full max-h-[85vh]">
+      <div className="flex items-center justify-between border-b px-6 py-4 flex-shrink-0 no-print">
         <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
           <button
             onClick={() => setActiveTab('prfaq')}
@@ -66,22 +73,26 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejected
           >
             {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
           </button>
-          <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors" title="Download PDF">
+          <button 
+            onClick={handleDownload}
+            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors" 
+            title="Download PDF"
+          >
             <Download size={18} />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 prose prose-slate max-w-none space-y-8">
+      <div id="print-content" className="flex-1 overflow-y-auto p-8 prose prose-slate max-w-none space-y-8 scroll-smooth min-h-0">
         {activeTab === 'report' && decisionType && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="bg-[#232f3e] text-white p-5 rounded-xl border border-slate-700 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <ShieldAlert size={16} className="text-[#ff9900]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Decision Architecture</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Impact Classification</span>
                 </div>
                 <div className="text-lg font-bold">{decisionType}</div>
-                <p className="text-xs text-slate-400 mt-1">Determined by Master Agent based on risk and reversibility.</p>
+                <p className="text-xs text-slate-400 mt-1">Classification based on risk and reversibility of the proposed path.</p>
              </div>
              <div className="bg-slate-50 border p-5 rounded-xl">
                 <div className="flex items-center gap-2 mb-3">
@@ -105,14 +116,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejected
         <div className="chat-markdown font-serif text-slate-800 leading-relaxed text-sm">
           <ReactMarkdown>{content || ''}</ReactMarkdown>
         </div>
-      </div>
-
-      <div className="px-6 py-3 bg-slate-50 border-t text-[10px] text-slate-400 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <GitPullRequest size={10} />
-          <span>Internal PM Council Review - Version 2.0 (Deterministic)</span>
-        </div>
-        <span>Amazon Proprietary & Confidential</span>
       </div>
     </div>
   );

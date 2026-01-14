@@ -49,6 +49,29 @@
         color: #4b5563;
         margin: 1rem 0;
       }
+
+      @media print {
+        body { background-color: white !important; padding: 0 !important; margin: 0 !important; }
+        nav, aside, header, .flex-shrink-0, button, form, .no-print, .sidebar-container {
+          display: none !important;
+        }
+        main, .flex-1, .overflow-y-auto {
+          overflow: visible !important;
+          height: auto !important;
+          display: block !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+        }
+        #root > div { display: block !important; }
+        .bg-white { box-shadow: none !important; border: none !important; }
+        .rounded-xl { border-radius: 0 !important; }
+        .max-h-[85vh] { max-height: none !important; }
+        #print-content {
+          display: block !important;
+          width: 100% !important;
+        }
+      }
     </style>
   <script type="importmap">
 {
