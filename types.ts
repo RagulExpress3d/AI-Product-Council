@@ -37,6 +37,7 @@ export interface CouncilSession {
   councilReport: string | null;
   rejectedPaths: RejectedPath[];
   decisionType: DecisionType | null;
+  readinessScore: number | null;
   status: 'draft' | 'discussing' | 'voting' | 'completed';
   facets: {
     customer: boolean;

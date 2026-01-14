@@ -66,19 +66,19 @@ export async function getAgentResponse(role: string, topic: string, context: str
   }
 }
 
-export async function generatePRFAQ(topic: string, councilDiscussion: string, settings: UserSettings): Promise<{ prfaq: string, report: string, decisionType: string, rejectedPaths: RejectedPath[] }> {
+export async function generatePRFAQ(topic: string, councilDiscussion: string, settings: UserSettings): Promise<{ prfaq: string, report: string, decisionType: string, rejectedPaths: RejectedPath[], readinessScore: number }> {
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: `Topic: ${topic}\n\nDebate Summary:\n${councilDiscussion}\n\nTasks:
 1. Generate standard Amazon PRFAQ.
 2. Generate Council Report. Use SIMPLE ENGLISH. 
-   Avoid jargons like "Type 1" or "Type 2". 
    Structure: 
    - Current State: Summarize where the product idea stands.
    - Logic for Rejection/Decision/Approval: Explain the Council's consensus or disagreements.
    - Suggested Next Steps: Clear, actionable path forward.
-3. Classify the decision category in plain English: Is it "High Impact & Difficult to Reverse" or "Low Impact & Easy to Change"?
-4. Extract exactly 2-3 "Rejected Paths" with reasons.`,
+3. Classify the decision category exactly as one of these two options: "High Impact & Difficult to Reverse (The One-Way Door)" or "Low Impact & Easy to Change (The Two-Way Door)".
+4. Assign a Readiness Score (1-10) based on how complete and concept-ready the requirements are for engineering handoff.
+5. Extract exactly 2-3 "Rejected Paths" with reasons.`,
     config: {
       systemInstruction: getBasePrompt(SpecialRoles.MASTER_PM, settings),
       responseMimeType: "application/json",
@@ -87,7 +87,8 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
         properties: {
           prfaq: { type: Type.STRING },
           report: { type: Type.STRING },
-          decisionType: { type: Type.STRING, description: "Plain English decision category like 'High Impact & Irreversible' or 'Low Impact & Reversible'" },
+          decisionType: { type: Type.STRING, description: "Either 'High Impact & Difficult to Reverse (The One-Way Door)' or 'Low Impact & Easy to Change (The Two-Way Door)'" },
+          readinessScore: { type: Type.NUMBER, description: "Score from 1 to 10" },
           rejectedPaths: {
             type: Type.ARRAY,
             items: {
@@ -100,7 +101,7 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
             }
           }
         },
-        required: ["prfaq", "report", "decisionType", "rejectedPaths"]
+        required: ["prfaq", "report", "decisionType", "readinessScore", "rejectedPaths"]
       }
     }
   });
@@ -108,6 +109,6 @@ export async function generatePRFAQ(topic: string, councilDiscussion: string, se
   try {
     return JSON.parse(response.text || '{}');
   } catch (e) {
-    return { prfaq: "Error", report: "Error", decisionType: "Low Impact & Reversible", rejectedPaths: [] };
+    return { prfaq: "Error", report: "Error", decisionType: "Low Impact & Easy to Change (The Two-Way Door)", readinessScore: 5, rejectedPaths: [] };
   }
 }

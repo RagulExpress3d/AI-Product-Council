@@ -10,6 +10,7 @@ interface CouncilViewProps {
   status: string;
   drivingLPs: string[];
   decisionType: DecisionType | null;
+  readinessScore: number | null;
 }
 
 const getAgentIcon = (index: number) => {
@@ -23,7 +24,13 @@ const getScoreColor = (score: number) => {
   return 'text-red-500';
 };
 
-const CouncilView: React.FC<CouncilViewProps> = ({ perspectives, isDiscussing, onRunCouncil, status, drivingLPs, decisionType }) => {
+const getReadinessColor = (score: number) => {
+  if (score >= 8) return 'text-green-400';
+  if (score >= 5) return 'text-amber-400';
+  return 'text-red-400';
+};
+
+const CouncilView: React.FC<CouncilViewProps> = ({ perspectives, isDiscussing, onRunCouncil, status, drivingLPs, decisionType, readinessScore }) => {
   return (
     <div className="space-y-6">
       <div className="bg-[#232f3e] text-white rounded-xl p-8 shadow-md border border-[#37475a] flex flex-col md:flex-row justify-between gap-6">
@@ -35,12 +42,20 @@ const CouncilView: React.FC<CouncilViewProps> = ({ perspectives, isDiscussing, o
               <p className="text-slate-300 text-sm">Deterministic audit based on {drivingLPs.length} Leadership Principles.</p>
             </div>
           </div>
-          {decisionType && (
-            <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-              <span className="text-[10px] font-bold uppercase text-[#ff9900]">Decision Vector:</span>
-              <span className="text-xs font-bold">{decisionType}</span>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {decisionType && (
+              <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+                <span className="text-[10px] font-bold uppercase text-[#ff9900]">Decision Risk:</span>
+                <span className="text-xs font-bold">{decisionType}</span>
+              </div>
+            )}
+            {readinessScore !== null && (
+              <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+                <span className="text-[10px] font-bold uppercase text-[#ff9900]">Readiness Score:</span>
+                <span className={`text-xs font-bold ${getReadinessColor(readinessScore)}`}>{readinessScore}/10</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">

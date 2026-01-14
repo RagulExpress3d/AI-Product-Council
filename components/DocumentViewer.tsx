@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { FileText, FileBarChart, Download, Copy, Check, GitPullRequest, ShieldAlert, XCircle } from 'lucide-react';
+import { FileText, FileBarChart, Download, Copy, Check, GitPullRequest, ShieldAlert, XCircle, Info } from 'lucide-react';
 import { RejectedPath, DecisionType } from '../types';
 
 interface DocumentViewerProps {
@@ -9,9 +9,10 @@ interface DocumentViewerProps {
   report: string | null;
   rejectedPaths: RejectedPath[];
   decisionType: DecisionType | null;
+  readinessScore: number | null;
 }
 
-const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejectedPaths, decisionType }) => {
+const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejectedPaths, decisionType, readinessScore }) => {
   const [activeTab, setActiveTab] = useState<'prfaq' | 'report'>('prfaq');
   const [copied, setCopied] = useState(false);
 
@@ -35,9 +36,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejected
   };
 
   const handleDownload = () => {
-    // Using window.print() is the most reliable way to generate a PDF in-browser 
-    // without heavy external libraries. The index.html has @media print styles
-    // to ensure a clean document-only output.
     window.print();
   };
 
@@ -84,15 +82,27 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ prfaq, report, rejected
       </div>
 
       <div id="print-content" className="flex-1 overflow-y-auto p-8 prose prose-slate max-w-none space-y-8 scroll-smooth min-h-0">
-        {activeTab === 'report' && decisionType && (
+        {activeTab === 'report' && (decisionType || readinessScore !== null) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="bg-[#232f3e] text-white p-5 rounded-xl border border-slate-700 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShieldAlert size={16} className="text-[#ff9900]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Impact Classification</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert size={16} className="text-[#ff9900]" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Readiness Score</span>
+                  </div>
+                  {readinessScore !== null && (
+                    <span className="text-2xl font-black text-[#ff9900]">{readinessScore}<span className="text-xs text-slate-400">/10</span></span>
+                  )}
                 </div>
-                <div className="text-lg font-bold">{decisionType}</div>
-                <p className="text-xs text-slate-400 mt-1">Classification based on risk and reversibility of the proposed path.</p>
+                <div className="text-lg font-bold">{decisionType || 'Determining Risk...'}</div>
+                <div className="mt-2 pt-2 border-t border-slate-700 flex gap-2">
+                  <Info size={12} className="text-[#ff9900] flex-shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    {decisionType && decisionType.toLowerCase().includes('one-way') 
+                      ? "One-Way Door decisions require deep audit because they are permanent once committed." 
+                      : "Two-Way Door decisions are flexible; prioritize 'Bias for Action' and iterate fast."}
+                  </p>
+                </div>
              </div>
              <div className="bg-slate-50 border p-5 rounded-xl">
                 <div className="flex items-center gap-2 mb-3">

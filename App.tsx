@@ -48,6 +48,7 @@ const App: React.FC = () => {
       councilReport: null,
       rejectedPaths: [],
       decisionType: null,
+      readinessScore: null,
       status: 'draft',
       facets: { customer: false, problem: false, benefit: false, solution: false },
       createdAt: Date.now()
@@ -104,7 +105,7 @@ const App: React.FC = () => {
     try {
       const context = activeSession.messages.map(m => `${m.sender}: ${m.content}`).join('\n');
       const perspectives = await Promise.all(settings.lpFocus.map(role => getAgentResponse(role, activeSession.topic, context, settings)));
-      const { prfaq, report, decisionType, rejectedPaths } = await generatePRFAQ(activeSession.topic, perspectives.map(p => `${p.role}: ${p.content}`).join('\n\n'), settings);
+      const { prfaq, report, decisionType, rejectedPaths, readinessScore } = await generatePRFAQ(activeSession.topic, perspectives.map(p => `${p.role}: ${p.content}`).join('\n\n'), settings);
       
       setSessions(prev => prev.map(s => s.id === activeSessionId ? { 
         ...s, 
@@ -112,6 +113,7 @@ const App: React.FC = () => {
         prfaq, 
         councilReport: report, 
         decisionType: decisionType as any, 
+        readinessScore,
         rejectedPaths,
         status: 'completed' 
       } : s));
@@ -206,7 +208,15 @@ const App: React.FC = () => {
             )}
             {activeTab === 'council' && activeSession && (
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <CouncilView perspectives={activeSession.perspectives} isDiscussing={isDiscussing} onRunCouncil={runCouncilDebate} status={activeSession.status} drivingLPs={settings.lpFocus} decisionType={activeSession.decisionType} />
+                <CouncilView 
+                  perspectives={activeSession.perspectives} 
+                  isDiscussing={isDiscussing} 
+                  onRunCouncil={runCouncilDebate} 
+                  status={activeSession.status} 
+                  drivingLPs={settings.lpFocus} 
+                  decisionType={activeSession.decisionType}
+                  readinessScore={activeSession.readinessScore}
+                />
               </div>
             )}
             {activeTab === 'documents' && activeSession && (
@@ -216,6 +226,7 @@ const App: React.FC = () => {
                   report={activeSession.councilReport} 
                   rejectedPaths={activeSession.rejectedPaths}
                   decisionType={activeSession.decisionType}
+                  readinessScore={activeSession.readinessScore}
                 />
               </div>
             )}
